@@ -31,12 +31,16 @@ Docker image to build my projects using Emacs Org-mode.
 ** Languages support
 
    #+BEGIN_SRC emacs-lisp
+   (unless (package-installed-p 'dockerfile-mode)
+     (package-install 'dockerfile-mode))
    (unless (package-installed-p 'json-mode)
      (package-install 'json-mode))
    (unless (package-installed-p 'js2-mode)
      (package-install 'js2-mode))
    (unless (package-installed-p 'rjsx-mode)
      (package-install 'rjsx-mode))
+   (unless (package-installed-p 'yaml-mode)
+     (package-install 'yaml-mode))
    #+END_SRC
 
 * Common initialisation
