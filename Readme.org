@@ -222,12 +222,45 @@ Docker image to build my projects using Emacs Org-mode.
    #+END_SRC
 
 * Docker setup
+  :PROPERTIES:
+  :header-args: :noweb-ref docker-image
+  :END:
+
+  Base Emacs image.
+  #+BEGIN_SRC dockerfile
+  FROM jare/emacs:latest as emacs
+  #+END_SRC
+
+  Install latest org-mode to replace version of org included in Emacs.
+  #+BEGIN_SRC dockerfile
+  RUN apt-get update && apt-get install -y wget
+  RUN mkdir -p /home/emacs && \
+      cd /home/emacs && \
+      wget https://orgmode.org/org-9.1.9.tar.gz && \
+      tar xvzf org-9.1.9.tar.gz
+  #+END_SRC
+
+  Get my custom Emacs config, including org-html-themes.
+  #+BEGIN_SRC dockerfile
+  RUN git clone --recurse --branch test https://github.com/eauc/dotfiles /home/emacs/dotfiles
+  #+END_SRC
+
+  Include elisp scripts used to build projects.
+  #+BEGIN_SRC dockerfile
+  COPY ./elisp /home/emacs/elisp
+  #+END_SRC
+
+  Install packages.
+  #+BEGIN_SRC dockerfile
+  RUN HOME=/home/emacs emacs --batch -l "/home/emacs/elisp/install.el"
+  #+END_SRC
 
 * Files
 
 ** Install
 
    #+BEGIN_SRC emacs-lisp :tangle ./elisp/install.el :noweb yes :mkdirp yes
+   (toggle-debug-on-error)
    <<install>>
    #+END_SRC
 
@@ -247,4 +280,11 @@ Docker image to build my projects using Emacs Org-mode.
 
    #+BEGIN_SRC emacs-lisp :tangle ./elisp/publish-all.el :noweb yes :mkdirp yes
    <<publish-all>>
+   #+END_SRC
+
+
+** Dockerfile
+
+   #+BEGIN_SRC dockerfile :tangle ./Dockerfile :noweb yes :mkdirp yes
+   <<docker-image>>
    #+END_SRC
