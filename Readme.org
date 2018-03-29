@@ -55,6 +55,83 @@ Docker image to build my projects using Emacs Org-mode.
    #+END_SRC
 
 * Publish HTML doc
+  :PROPERTIES:
+  :header-args: :noweb-ref publish-all
+  :END:
+
+** Publish all org file in a directory
+
+   - title :: index page title.
+   - base-dir :: directory including source org files.
+   - publishing-dir :: where to put HTML doc files.
+
+   #+BEGIN_SRC emacs-lisp :noweb yes
+   (defun publish-all (title base-dir publishing-dir)
+     "Helper function to publish all org files in a directory"
+     (progn
+       <<publish-settings>>
+       (org-publish-all)))
+   #+END_SRC
+
+** Publish settings
+   :PROPERTIES:
+   :header-args: :noweb-ref publish-settings
+   :END:
+
+   Main publish settings.
+
+   #+BEGIN_SRC emacs-lisp
+   (setq org-publish-project-alist
+	 '(("doc-html"
+	    :base-directory base-dir
+	    :publishing-directory publishing-dir
+	    :publishing-function org-html-publish-to-html
+	    :section-numbers nil
+	    :recursive t
+	    :with-toc t
+	    :auto-sitemap t
+	    :sitemap-filename "index.org"
+	    :sitemap-title title
+	    :sitemap-function org-publish-org-sitemap
+	    :sitemap-format-entry org-publish-org-sitemap-format
+	    )))
+   #+END_SRC
+
+   - do not check timestamp to publish only changed files.
+   - highlight source blocks natively.
+   - highlight source blocks with css classes instead of inline styles.
+
+   #+BEGIN_SRC emacs-lisp
+   (setq org-publish-use-timestamps-flag nil
+	 org-src-fontify-natively t
+	 org-html-htmlize-output-type 'css)
+   #+END_SRC
+
+** Generate sitemap file
+
+   #+BEGIN_SRC emacs-lisp
+   (defun org-publish-org-sitemap (title list)
+     "Sitemap generation function."
+     (concat (format "#+TITLE: %s\n#+SETUPFILE: ./publish.setup\n\n" title)
+             (org-list-to-subtree list)))
+   #+END_SRC
+
+** Generate sitemap entry
+
+   Make link relative to sitemap file.
+
+   #+BEGIN_SRC emacs-lisp
+   (defun org-publish-org-sitemap-format (entry style project)
+     "Custom sitemap entry formatting"
+     (cond ((not (directory-name-p entry))
+            (format "[[file:./%s][%s]]"
+                    entry
+                    (org-publish-find-title entry project)))
+           ((eq style 'tree)
+            ;; Return only last subdir.
+            (file-name-nondirectory (directory-file-name entry)))
+           (t entry)))
+   #+END_SRC
 
 * Docker setup
 
@@ -62,8 +139,13 @@ Docker image to build my projects using Emacs Org-mode.
 
 ** Tangle-all
 
-  #+BEGIN_SRC emacs-lisp :tangle ./elisp/tangle-all.el :noweb yes :mkdirp yes
-  (message (format "Org version: %s" (org-version)))
+   #+BEGIN_SRC emacs-lisp :tangle ./elisp/tangle-all.el :noweb yes :mkdirp yes
+   <<tangle-all>>
+   #+END_SRC
 
-  <<tangle-all>>
-  #+END_SRC
+** Publish-all
+
+   #+BEGIN_SRC emacs-lisp :tangle ./elisp/publish-all.el :noweb yes :mkdirp yes
+   <<publish-all>>
+   #+END_SRC
+

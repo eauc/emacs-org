@@ -1,3 +1,5 @@
+(toggle-debug-on-error)
+
 (require 'package)
 (package-initialize)
 
@@ -22,3 +24,5 @@
 (add-to-list 'org-src-lang-modes '("jsx" . js))
 
 (setq org-src-fontify-natively t)
+
+(message (format "Org version: %s" (org-version)))

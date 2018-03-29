@@ -1,5 +1,3 @@
-(message (format "Org version: %s" (org-version)))
-
 (defun tangle-all (directory)
   "Tangle all the Org-mode files in the directory of the file of the current buffer
    recursively in child folders. Returns the list of tangled files"
