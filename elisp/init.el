@@ -17,5 +17,6 @@
    (css . t)
    (plantuml . t)))
 
-(add-to-list 'org-src-lang-modes '("jsx" . js))
+(add-to-list 'org-src-lang-modes '("js" . js2))
+(add-to-list 'org-src-lang-modes '("jsx" . rjsx))
 (message (format "Org version: %s" (org-version)))

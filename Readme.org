@@ -13,10 +13,10 @@ Docker image to build my projects using Emacs Org-mode.
 
    #+BEGIN_SRC emacs-lisp
    (require 'package)
-   ;; (add-to-list 'package-archives
-   ;;              '("melpa-stable" . "http://stable.melpa.org/packages/") t)
    (add-to-list 'package-archives
-                '("melpa" . "https://melpa.org/packages/"))
+		'("melpa-stable" . "http://stable.melpa.org/packages/") t)
+   (add-to-list 'package-archives
+		'("melpa" . "https://melpa.org/packages/"))
    (package-initialize)
    (package-refresh-contents)
    #+END_SRC
@@ -31,12 +31,12 @@ Docker image to build my projects using Emacs Org-mode.
 ** Languages support
 
    #+BEGIN_SRC emacs-lisp
-   ;; (unless (package-installed-p 'json-mode)
-   ;;   (package-install 'json-mode))
-   ;; (unless (package-installed-p 'js2-mode)
-   ;;   (package-install 'js2-mode))
-   ;; (unless (package-installed-p 'rjsx-mode)
-   ;;   (package-install 'rjsx-mode))
+   (unless (package-installed-p 'json-mode)
+     (package-install 'json-mode))
+   (unless (package-installed-p 'js2-mode)
+     (package-install 'js2-mode))
+   (unless (package-installed-p 'rjsx-mode)
+     (package-install 'rjsx-mode))
    #+END_SRC
 
 * Common initialisation
@@ -82,7 +82,8 @@ Docker image to build my projects using Emacs Org-mode.
      (css . t)
      (plantuml . t)))
 
-  (add-to-list 'org-src-lang-modes '("jsx" . js))
+  (add-to-list 'org-src-lang-modes '("js" . js2))
+  (add-to-list 'org-src-lang-modes '("jsx" . rjsx))
   #+END_SRC
 
   Signals end of init script by printing Org version.
@@ -244,14 +245,16 @@ Docker image to build my projects using Emacs Org-mode.
   RUN git clone --recurse --branch test https://github.com/eauc/dotfiles /home/emacs/dotfiles
   #+END_SRC
 
-  Include elisp scripts used to build projects.
-  #+BEGIN_SRC dockerfile
-  COPY ./elisp /home/emacs/elisp
-  #+END_SRC
-
   Install packages.
   #+BEGIN_SRC dockerfile
+  RUN mkdir -p /home/emacs/elisp
+  COPY ./elisp/install.el /home/emacs/elisp/install.el
   RUN HOME=/home/emacs emacs --batch -l "/home/emacs/elisp/install.el"
+  #+END_SRC
+
+  Include elisp scripts used to build projects.
+  #+BEGIN_SRC dockerfile
+  COPY ./elisp/* /home/emacs/elisp/
   #+END_SRC
 
 * Files
