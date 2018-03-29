@@ -187,7 +187,7 @@ Docker image to build my projects using Emacs Org-mode.
 
    - do not check timestamp to publish only changed files.
    - highlight source blocks natively.
-   - highlight source blocks with css classes instead of inline styles.
+   - highlight source blocks with css classes instead of inline styles ([[https://emacs.stackexchange.com/questions/31439/how-to-get-colored-syntax-highlighting-of-code-blocks-in-asynchronous-org-mode-e][inline styles do not work in batch mode]]).
 
    #+BEGIN_SRC emacs-lisp
    (setq org-publish-use-timestamps-flag nil
