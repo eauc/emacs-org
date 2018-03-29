@@ -170,19 +170,19 @@ Docker image to build my projects using Emacs Org-mode.
 
    #+BEGIN_SRC emacs-lisp
    (setq org-publish-project-alist
-         '(("doc-html"
-            :base-directory base-dir
-            :publishing-directory publishing-dir
-            :publishing-function org-html-publish-to-html
-            :section-numbers nil
-            :recursive t
-            :with-toc t
-            :auto-sitemap t
-            :sitemap-filename "index.org"
-            :sitemap-title title
-            :sitemap-function org-publish-org-sitemap
-            :sitemap-format-entry org-publish-org-sitemap-format
-            )))
+	 `(("doc-html"
+	    :base-directory ,base-dir
+	    :publishing-directory ,publishing-dir
+	    :publishing-function org-html-publish-to-html
+	    :section-numbers nil
+	    :recursive t
+	    :with-toc t
+	    :auto-sitemap t
+	    :sitemap-filename "index.org"
+	    :sitemap-title ,title
+	    :sitemap-function org-publish-org-sitemap
+	    :sitemap-format-entry org-publish-org-sitemap-format
+	    )))
    #+END_SRC
 
    - do not check timestamp to publish only changed files.

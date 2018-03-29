@@ -2,19 +2,19 @@
   "Helper function to publish all org files in a directory"
   (progn
     (setq org-publish-project-alist
-          '(("doc-html"
-             :base-directory base-dir
-             :publishing-directory publishing-dir
-             :publishing-function org-html-publish-to-html
-             :section-numbers nil
-             :recursive t
-             :with-toc t
-             :auto-sitemap t
-             :sitemap-filename "index.org"
-             :sitemap-title title
-             :sitemap-function org-publish-org-sitemap
-             :sitemap-format-entry org-publish-org-sitemap-format
-             )))
+          `(("doc-html"
+    	 :base-directory ,base-dir
+    	 :publishing-directory ,publishing-dir
+    	 :publishing-function org-html-publish-to-html
+    	 :section-numbers nil
+    	 :recursive t
+    	 :with-toc t
+    	 :auto-sitemap t
+    	 :sitemap-filename "index.org"
+    	 :sitemap-title ,title
+    	 :sitemap-function org-publish-org-sitemap
+    	 :sitemap-format-entry org-publish-org-sitemap-format
+    	 )))
     (setq org-publish-use-timestamps-flag nil
           org-src-fontify-natively t
           org-html-htmlize-output-type 'css)
