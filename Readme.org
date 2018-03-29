@@ -2,6 +2,94 @@
 
 Docker image to build my projects using Emacs Org-mode.
 
+* Install required packages
+  :PROPERTIES:
+  :header-args: :noweb-ref install
+  :END:
+
+  During docker image build.
+
+** Initialize Emacs package
+
+   #+BEGIN_SRC emacs-lisp
+   (require 'package)
+   ;; (add-to-list 'package-archives
+   ;;              '("melpa-stable" . "http://stable.melpa.org/packages/") t)
+   (add-to-list 'package-archives
+                '("melpa" . "https://melpa.org/packages/"))
+   (package-initialize)
+   (package-refresh-contents)
+   #+END_SRC
+
+** Support code highlighting
+
+   #+BEGIN_SRC emacs-lisp
+   (unless (package-installed-p 'htmlize)
+     (package-install 'htmlize))
+   #+END_SRC
+
+** Languages support
+
+   #+BEGIN_SRC emacs-lisp
+   ;; (unless (package-installed-p 'json-mode)
+   ;;   (package-install 'json-mode))
+   ;; (unless (package-installed-p 'js2-mode)
+   ;;   (package-install 'js2-mode))
+   ;; (unless (package-installed-p 'rjsx-mode)
+   ;;   (package-install 'rjsx-mode))
+   #+END_SRC
+
+* Common initialisation
+  :PROPERTIES:
+  :header-args: :noweb-ref init
+  :END:
+
+  Enable debug mode.
+  #+BEGIN_SRC emacs-lisp
+  (toggle-debug-on-error)
+  #+END_SRC
+
+  Initialize Emacs package.
+  #+BEGIN_SRC emacs-lisp
+  (require 'package)
+  (package-initialize)
+  #+END_SRC
+
+  Add recent Org-mode to load path (will supercede version of org included in Emacs).
+  #+BEGIN_SRC emacs-lisp
+  (add-to-list 'load-path "/home/emacs/org-9.1.9/lisp")
+  (add-to-list 'load-path "/home/emacs/org-9.1.9/contrib/lisp")
+  #+END_SRC
+
+  Load required packages.
+  #+BEGIN_SRC emacs-lisp
+  (require 'org)
+  (require 'htmlize)
+  #+END_SRC
+
+  Configure org languages.
+  - custom mapping for jsx code blocks.
+  #+BEGIN_SRC emacs-lisp
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((shell . t)
+     (js . t)
+     (emacs-lisp . t)
+     (clojure . t)
+     (python . t)
+     (ruby . t)
+     (dot . t)
+     (css . t)
+     (plantuml . t)))
+
+  (add-to-list 'org-src-lang-modes '("jsx" . js))
+  #+END_SRC
+
+  Signals end of init script by printing Org version.
+  #+BEGIN_SRC emacs-lisp
+  (message (format "Org version: %s" (org-version)))
+  #+END_SRC
+
 * Tangle source code
   :PROPERTIES:
   :header-args: :noweb-ref tangle-all
@@ -82,19 +170,19 @@ Docker image to build my projects using Emacs Org-mode.
 
    #+BEGIN_SRC emacs-lisp
    (setq org-publish-project-alist
-	 '(("doc-html"
-	    :base-directory base-dir
-	    :publishing-directory publishing-dir
-	    :publishing-function org-html-publish-to-html
-	    :section-numbers nil
-	    :recursive t
-	    :with-toc t
-	    :auto-sitemap t
-	    :sitemap-filename "index.org"
-	    :sitemap-title title
-	    :sitemap-function org-publish-org-sitemap
-	    :sitemap-format-entry org-publish-org-sitemap-format
-	    )))
+         '(("doc-html"
+            :base-directory base-dir
+            :publishing-directory publishing-dir
+            :publishing-function org-html-publish-to-html
+            :section-numbers nil
+            :recursive t
+            :with-toc t
+            :auto-sitemap t
+            :sitemap-filename "index.org"
+            :sitemap-title title
+            :sitemap-function org-publish-org-sitemap
+            :sitemap-format-entry org-publish-org-sitemap-format
+            )))
    #+END_SRC
 
    - do not check timestamp to publish only changed files.
@@ -103,8 +191,8 @@ Docker image to build my projects using Emacs Org-mode.
 
    #+BEGIN_SRC emacs-lisp
    (setq org-publish-use-timestamps-flag nil
-	 org-src-fontify-natively t
-	 org-html-htmlize-output-type 'css)
+         org-src-fontify-natively t
+         org-html-htmlize-output-type 'css)
    #+END_SRC
 
 ** Generate sitemap file
@@ -137,6 +225,18 @@ Docker image to build my projects using Emacs Org-mode.
 
 * Files
 
+** Install
+
+   #+BEGIN_SRC emacs-lisp :tangle ./elisp/install.el :noweb yes :mkdirp yes
+   <<install>>
+   #+END_SRC
+
+** Init
+
+   #+BEGIN_SRC emacs-lisp :tangle ./elisp/init.el :noweb yes :mkdirp yes
+   <<init>>
+   #+END_SRC
+
 ** Tangle-all
 
    #+BEGIN_SRC emacs-lisp :tangle ./elisp/tangle-all.el :noweb yes :mkdirp yes
@@ -148,4 +248,3 @@ Docker image to build my projects using Emacs Org-mode.
    #+BEGIN_SRC emacs-lisp :tangle ./elisp/publish-all.el :noweb yes :mkdirp yes
    <<publish-all>>
    #+END_SRC
-
