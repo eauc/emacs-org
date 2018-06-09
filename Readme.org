@@ -13,34 +13,38 @@ Docker image to build my projects using Emacs Org-mode.
 
    #+BEGIN_SRC emacs-lisp
    (require 'package)
-   (add-to-list 'package-archives
-		'("melpa-stable" . "http://stable.melpa.org/packages/") t)
-   (add-to-list 'package-archives
-		'("melpa" . "https://melpa.org/packages/"))
+   (setq package-archives
+         '(("melpa-stable" . "http://stable.melpa.org/packages/")
+           ("melpa" . "https://melpa.org/packages/")
+           ("org" . "http://orgmode.org/elpa/")))
    (package-initialize)
    (package-refresh-contents)
+   #+END_SRC
+
+** Org-mode
+
+   #+BEGIN_SRC emacs-lisp
+   (package-install 'org-plus-contrib)
    #+END_SRC
 
 ** Support code highlighting
 
    #+BEGIN_SRC emacs-lisp
-   (unless (package-installed-p 'htmlize)
-     (package-install 'htmlize))
+   (package-install 'htmlize)
+   #+END_SRC
+
+** Rainbow delimiters
+
+   #+BEGIN_SRC emacs-lisp
+   (package-install 'rainbow-delimiters)
    #+END_SRC
 
 ** Languages support
 
    #+BEGIN_SRC emacs-lisp
-   (unless (package-installed-p 'dockerfile-mode)
-     (package-install 'dockerfile-mode))
-   (unless (package-installed-p 'json-mode)
-     (package-install 'json-mode))
-   (unless (package-installed-p 'js2-mode)
-     (package-install 'js2-mode))
-   (unless (package-installed-p 'rjsx-mode)
-     (package-install 'rjsx-mode))
-   (unless (package-installed-p 'yaml-mode)
-     (package-install 'yaml-mode))
+   (package-install 'dockerfile-mode)
+   (package-install 'json-mode)
+   (package-install 'yaml-mode)
    #+END_SRC
 
 * Common initialisation
@@ -59,35 +63,48 @@ Docker image to build my projects using Emacs Org-mode.
   (package-initialize)
   #+END_SRC
 
-  Add recent Org-mode to load path (will supercede version of org included in Emacs).
-  #+BEGIN_SRC emacs-lisp
-  (add-to-list 'load-path "/home/emacs/org-9.1.9/lisp")
-  (add-to-list 'load-path "/home/emacs/org-9.1.9/contrib/lisp")
-  #+END_SRC
-
   Load required packages.
   #+BEGIN_SRC emacs-lisp
   (require 'org)
   (require 'htmlize)
+  (require 'rainbow-delimiters)
+  (require 'dockerfile-mode)
+  (require 'json-mode)
+  (require 'yaml-mode)
+  #+END_SRC
+
+  Activate rainbow delimiters
+  #+BEGIN_SRC emacs-lisp
+  (with-eval-after-load 'rainbow-delimiters
+    (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
   #+END_SRC
 
   Configure org languages.
-  - custom mapping for jsx code blocks.
+  - use js-mode for jsx highlighting
+  - do not prompt for confirmation on block evaluation
+  - generate separate stylesheet
   #+BEGIN_SRC emacs-lisp
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((shell . t)
-     (js . t)
-     (emacs-lisp . t)
-     (clojure . t)
-     (python . t)
-     (ruby . t)
-     (dot . t)
-     (css . t)
-     (plantuml . t)))
+  (with-eval-after-load 'org
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((shell . t)
+       (js . t)
+       (emacs-lisp . t)
+       (clojure . t)
+       (python . t)
+       (ruby . t)
+       (dot . t)
+       (css . t)
+       (plantuml . t)))
+    (add-to-list 'org-src-lang-modes '("jsx" . js))
+    (setq org-confirm-babel-evaluate nil)
+    (setq org-html-htmlize-output-type 'css))
+  #+END_SRC
 
-  (add-to-list 'org-src-lang-modes '("js" . js2))
-  (add-to-list 'org-src-lang-modes '("jsx" . rjsx))
+  Load tangle & publish helper functions.
+  #+BEGIN_SRC emacs-lisp
+  (load-file "/root/.emacs.d/publish-all.el")
+  (load-file "/root/.emacs.d/tangle-all.el")
   #+END_SRC
 
   Signals end of init script by printing Org version.
@@ -102,10 +119,11 @@ Docker image to build my projects using Emacs Org-mode.
 
 ** Tangle all org files in a directory
 
+   Tangle all the Org-mode files in the directory & recursively in child folders.
+   Returns the list of tangled files.
+
    #+BEGIN_SRC emacs-lisp
    (defun tangle-all (directory)
-     "Tangle all the Org-mode files in the directory of the file of the current buffer
-      recursively in child folders. Returns the list of tangled files"
      (mapcar (lambda (f)
 	       (progn (message f)
 		      (when (not (file-directory-p f))
@@ -115,11 +133,12 @@ Docker image to build my projects using Emacs Org-mode.
 
 ** Recurse on files in directory
 
+   List files in DIRECTORY and in its sub-directories.
+   Return files that match the regular expression MATCH.
+   Recurse only to depth MAXDEPTH. If zero or negative, then do not recurse
+
    #+BEGIN_SRC emacs-lisp
    (defun directory-files-recursive (directory match maxdepth)
-     "List files in DIRECTORY and in its sub-directories.
-    Return files that match the regular expression MATCH. Recurse only
-    to depth MAXDEPTH. If zero or negative, then do not recurse"
      (let* ((files-list '())
             (current-directory-list
              (directory-files directory t)))
@@ -153,13 +172,13 @@ Docker image to build my projects using Emacs Org-mode.
 
 ** Publish all org file in a directory
 
+   Helper function to publish all org files in a directory
    - title :: index page title.
    - base-dir :: directory including source org files.
    - publishing-dir :: where to put HTML doc files.
 
    #+BEGIN_SRC emacs-lisp :noweb yes
    (defun publish-all (title base-dir publishing-dir)
-     "Helper function to publish all org files in a directory"
      (progn
        <<publish-settings>>
        (org-publish-all)))
@@ -174,19 +193,24 @@ Docker image to build my projects using Emacs Org-mode.
 
    #+BEGIN_SRC emacs-lisp
    (setq org-publish-project-alist
-	 `(("doc-html"
-	    :base-directory ,base-dir
-	    :publishing-directory ,publishing-dir
-	    :publishing-function org-html-publish-to-html
-	    :section-numbers nil
-	    :recursive t
-	    :with-toc t
-	    :auto-sitemap t
-	    :sitemap-filename "index.org"
-	    :sitemap-title ,title
-	    :sitemap-function org-publish-org-sitemap
-	    :sitemap-format-entry org-publish-org-sitemap-format
-	    )))
+         `(("doc-html"
+            :base-directory ,base-dir
+            ;; :base-extension "org"
+            :publishing-directory ,publishing-dir
+            :publishing-function org-html-publish-to-html
+            ;; :html-extension "html"
+            :section-numbers nil
+            :recursive t
+            :with-toc t
+            :auto-sitemap t
+            :sitemap-filename "index.org"
+            :sitemap-title ,title
+            :sitemap-function org-publish-org-sitemap
+            :sitemap-format-entry org-publish-org-sitemap-format
+            ;; :table-of-contents nil
+            ;; :headline-levels 6
+            ;; :body-only t
+            )))
    #+END_SRC
 
    - do not check timestamp to publish only changed files.
@@ -201,20 +225,21 @@ Docker image to build my projects using Emacs Org-mode.
 
 ** Generate sitemap file
 
+   Sitemap generation function.
+
    #+BEGIN_SRC emacs-lisp
    (defun org-publish-org-sitemap (title list)
-     "Sitemap generation function."
      (concat (format "#+TITLE: %s\n#+SETUPFILE: ./publish.setup\n\n" title)
              (org-list-to-subtree list)))
    #+END_SRC
 
 ** Generate sitemap entry
 
+   Custom sitemap entry formatting.
    Make link relative to sitemap file.
 
    #+BEGIN_SRC emacs-lisp
    (defun org-publish-org-sitemap-format (entry style project)
-     "Custom sitemap entry formatting"
      (cond ((not (directory-name-p entry))
             (format "[[file:./%s][%s]]"
                     entry
@@ -232,33 +257,29 @@ Docker image to build my projects using Emacs Org-mode.
 
   Base Emacs image.
   #+BEGIN_SRC dockerfile
-  FROM jare/emacs:latest as emacs
-  #+END_SRC
-
-  Install latest org-mode to replace version of org included in Emacs.
-  #+BEGIN_SRC dockerfile
-  RUN apt-get update && apt-get install -y wget
-  RUN mkdir -p /home/emacs && \
-      cd /home/emacs && \
-      wget https://orgmode.org/org-9.1.9.tar.gz && \
-      tar xvzf org-9.1.9.tar.gz
-  #+END_SRC
-
-  Get my custom Emacs config, including org-html-themes.
-  #+BEGIN_SRC dockerfile
-  RUN git clone --recurse --branch test https://github.com/eauc/dotfiles /home/emacs/dotfiles
+  FROM iquiw/alpine-emacs as emacs
+  RUN apk update && apk add git graphviz
   #+END_SRC
 
   Install packages.
   #+BEGIN_SRC dockerfile
-  RUN mkdir -p /home/emacs/elisp
-  COPY ./elisp/install.el /home/emacs/elisp/install.el
-  RUN HOME=/home/emacs emacs --batch -l "/home/emacs/elisp/install.el"
+  COPY elisp/install.el /root/.emacs.d/
+  RUN emacs --batch -q -l "/root/.emacs.d/install.el"
   #+END_SRC
 
   Include elisp scripts used to build projects.
   #+BEGIN_SRC dockerfile
-  COPY ./elisp/* /home/emacs/elisp/
+  COPY ./elisp/* /root/.emacs.d/
+  #+END_SRC
+
+  Prepare HTML themes for org.
+  #+BEGIN_SRC dockerfile
+  RUN git clone https://github.com/fniessen/org-html-themes.git
+  #+END_SRC
+
+  Include css theme usable by exported html files.
+  #+BEGIN_SRC dockerfile
+  COPY ./css/theme.css /root/
   #+END_SRC
 
 * Files

@@ -1,11 +1,7 @@
-FROM jare/emacs:latest as emacs
-RUN apt-get update && apt-get install -y wget
-RUN mkdir -p /home/emacs && \
-    cd /home/emacs && \
-    wget https://orgmode.org/org-9.1.9.tar.gz && \
-    tar xvzf org-9.1.9.tar.gz
-RUN git clone --recurse --branch test https://github.com/eauc/dotfiles /home/emacs/dotfiles
-RUN mkdir -p /home/emacs/elisp
-COPY ./elisp/install.el /home/emacs/elisp/install.el
-RUN HOME=/home/emacs emacs --batch -l "/home/emacs/elisp/install.el"
-COPY ./elisp/* /home/emacs/elisp/
+FROM iquiw/alpine-emacs as emacs
+RUN apk update && apk add git graphviz
+COPY elisp/install.el /root/.emacs.d/
+RUN emacs --batch -q -l "/root/.emacs.d/install.el"
+COPY ./elisp/* /root/.emacs.d/
+RUN git clone https://github.com/fniessen/org-html-themes.git
+COPY ./css/theme.css /root/
