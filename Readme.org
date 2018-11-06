@@ -42,6 +42,7 @@ Docker image to build my projects using Emacs Org-mode.
 ** Languages support
 
    #+BEGIN_SRC emacs-lisp
+   (package-install 'clojure-mode)
    (package-install 'dockerfile-mode)
    (package-install 'json-mode)
    (package-install 'yaml-mode)

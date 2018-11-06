@@ -9,6 +9,7 @@
 (package-install 'org-plus-contrib)
 (package-install 'htmlize)
 (package-install 'rainbow-delimiters)
+(package-install 'clojure-mode)
 (package-install 'dockerfile-mode)
 (package-install 'json-mode)
 (package-install 'yaml-mode)
